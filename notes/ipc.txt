@@ -1,0 +1,26 @@
+Verschiedene Messagewarteschlangen pro Process(/Thread?), jedoch mind. eine (".default").
+
+Bsp:
+
+
+#define IPC_ALL     ".all"
+#define IPC_DEFAULT ".default"
+
+struct ipc_msg
+{
+	uint32_t    code;    /* command */
+	uint32_t    subcode; /* subcommand */
+	uint64_t    data;    /* large enough for a pointer */
+	const char *queue;   /* the queue the message was in. MUST be set to NULL for ipc_send */
+};
+
+int ipc_send(pid_t pid, struct ipc_msg *msg, const char *queue);
+
+int ipc_recv(struct ipc_msg *msg, const char *queue);
+
+int ipc_wait(struct ipc_msg *msg, const char *queue, time_t timeout);
+
+int ipc_create_queue(const char *name);
+/**
+ * Any name beginning with a dot is reserved.
+ */

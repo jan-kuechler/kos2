@@ -1,0 +1,1 @@
+qemu -m 32 -serial file:kos.log -L ../tools/qemu -cdrom build/kos.iso
