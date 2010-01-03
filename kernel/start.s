@@ -12,7 +12,8 @@ kstart:
 	push ebx
 	push eax
 	
-	call kmain
+	mov  eax, kmain
+	call eax
 	
 	cli
 	hlt

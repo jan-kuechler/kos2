@@ -29,7 +29,7 @@ int vprintk(const char *fmt, va_list args)
 
 	char buffer[2048] = "";
 	int num = strafmt(buffer, fmt, args);
-	bool put_nl = buffer[num - 1] == '\n';
+	bool put_nl = buffer[num-1] != '\n';
 
 	int written = num;
 	if (loglvl <= cur_console->loglevel()) {

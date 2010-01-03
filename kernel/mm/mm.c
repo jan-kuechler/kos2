@@ -313,6 +313,8 @@ static enum block_type get_avail_block(paddr_t *start, size_t *len, size_t i)
 
 void init_mm(void)
 {
+	printk(KERN_DEBUG "Initializing memory manager");
+
 	// mark everything as not available
 	memset(mmap, 0, MMAP_SIZE * sizeof(MMAP_TYPE));
 
@@ -331,8 +333,9 @@ void init_mm(void)
 
 		if (type == END_OF_BLOCKS)
 			break;
-		if (type == UNUSABLE_BLOCK)
+		if (type == UNUSABLE_BLOCK) {
 			continue;
+		}
 
 		printk(KERN_DEBUG "Memory block: %dkb at %p\n", len/1024, start);
 

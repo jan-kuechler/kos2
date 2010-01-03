@@ -1,6 +1,8 @@
 #ifndef CONSOLE_H
 #define CONSOLE_H
 
+#include <stdint.h>
+
 /**
  * Console state
  */
@@ -8,7 +10,8 @@ struct con_state
 {
 	unsigned int width, height; /**< Console dimension */
 	unsigned int x, y;          /**< Cursor position */
-	const char *buffer;         /**< Old output */
+	uint8_t color;
+	const uint16_t *buffer;         /**< Old output */
 };
 
 /**
@@ -35,13 +38,13 @@ struct console
 	/**< Returns the current loglevel */
 	int (*loglevel)(void);
 
-	int (*set_cursor)(unsigned int x, unsigned int y);
-	int (*get_cursor)(unsigned int *x, unsigned int *y);
 	int (*get_state)(struct con_state *state);
 };
 
 extern struct console *cur_console;
 
 int con_set(struct console *con);
+
+int init_bootcon(void); /* boot_console.c */
 
 #endif /*CONSOLE_H*/

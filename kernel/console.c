@@ -12,8 +12,6 @@ static int default_puts(const char *);
 static int default_putc(char);
 static int default_clear(void);
 static int default_loglevel(void);
-static int default_set_cursor(unsigned int, unsigned int);
-static int default_get_cursor(unsigned int *, unsigned int *);
 static int default_get_state(struct con_state *);
 
 #define OPT_DEFAULT(con,func) if (!(con)->func) (con)->func = default_##func;
@@ -28,12 +26,11 @@ int con_set(struct console *con)
 
 	OPT_DEFAULT(con, init);
 	OPT_DEFAULT(con, free);
+	OPT_DEFAULT(con, clear);
 	OPT_DEFAULT(con, status);
 	OPT_DEFAULT(con, puts);
 	OPT_DEFAULT(con, putc);
 	OPT_DEFAULT(con, loglevel);
-	OPT_DEFAULT(con, set_cursor);
-	OPT_DEFAULT(con, get_cursor);
 	OPT_DEFAULT(con, get_state);
 
 	cur_console = con;
@@ -59,7 +56,17 @@ static int default_status(void)
 
 static int default_puts(const char *dummy)
 {
-	return 0;
+	int err;
+	int count = 0;
+	while (*dummy) {
+		err = cur_console->putc(*dummy++);
+		if (err != OK) {
+			seterr(err);
+			return count;
+		}
+		count++;
+	}
+	return count;
 }
 
 static int default_putc(char dummy)
@@ -75,16 +82,6 @@ static int default_clear(void)
 static int default_loglevel(void)
 {
 	return LOGLVL_SILENT;
-}
-
-static int default_set_cursor(unsigned int dummy1, unsigned int dummy2)
-{
-	return -E_IMPL;
-}
-
-static int default_get_cursor(unsigned int *dummy1, unsigned int *dummy2)
-{
-	return -E_IMPL;
 }
 
 static int default_get_state(struct con_state *dummy)
