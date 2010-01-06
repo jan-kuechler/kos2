@@ -1,3 +1,4 @@
+#include <compiler.h>
 #include <stdlib.h>
 #include "error.h"
 #include "console.h"
@@ -18,7 +19,7 @@ static int default_get_state(struct con_state *);
 
 int con_set(struct console *con)
 {
-	struct con_state state = {};
+	struct con_state state = {0};
 	if (cur_console) {
 		cur_console->get_state(&state);
 		cur_console->free();
@@ -41,6 +42,7 @@ int con_set(struct console *con)
 
 static int default_init(struct con_state *dummy)
 {
+	__unused(dummy);
 	return OK;
 }
 
@@ -54,12 +56,12 @@ static int default_status(void)
 	return OK;
 }
 
-static int default_puts(const char *dummy)
+static int default_puts(const char *str)
 {
 	int err;
 	int count = 0;
-	while (*dummy) {
-		err = cur_console->putc(*dummy++);
+	while (*str) {
+		err = cur_console->putc(*str++);
 		if (err != OK) {
 			seterr(err);
 			return count;
@@ -71,6 +73,7 @@ static int default_puts(const char *dummy)
 
 static int default_putc(char dummy)
 {
+	__unused(dummy);
 	return -E_IMPL;
 }
 
@@ -86,5 +89,6 @@ static int default_loglevel(void)
 
 static int default_get_state(struct con_state *dummy)
 {
+	__unused(dummy);
 	return -E_IMPL;
 }

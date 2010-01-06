@@ -56,7 +56,10 @@ build/.rules: $(SRCFILES) Makefile
 
 -include build/.rules
 
-clean:
+clean: partclean
 	@$(LUA) build/scripts/util.lua cleanup
 	@rm -f build/.rules
 	@rm -rf build/tmp
+	
+partclean:
+	@rm -f $(OBJFILES) $(ASMOBJS)

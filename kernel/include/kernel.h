@@ -1,6 +1,7 @@
 #ifndef KERNEL_H
 #define KERNEL_H
 
+#include <kos/config.h>
 #include "linker.h"
 #include "multiboot.h"
 
@@ -17,6 +18,16 @@
 #define KERN_DEBUG      "<7>"   /* debug-level messages                 */
 
 #define KERN_DEFAULT    "<d>"
+
+#ifdef CONF_DEBUG
+#define kassert(expr)\
+	do {\
+		if (!(expr))\
+			panic("Assertion failed: '%s' %s:%s:%d", #expr, __func__,__FILE__,__LINE__);\
+	}while(0)
+#else
+#define kassert(...)
+#endif
 
 extern mb_info_t mb_info;
 

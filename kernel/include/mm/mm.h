@@ -10,7 +10,7 @@
 /**
  * Initializes the physical memory manager.
  */
-void init_mm(void);
+int init_mm(void);
 
 /**
  * Allocates a physical memory page. If any error occures

@@ -40,7 +40,7 @@ static inline void append_node(mem_node_t **list, mem_node_t *node)
 
 static mem_node_t* create_unused_nodes(void)
 {
-	int i = 0;
+	unsigned int i = 0;
 	mem_node_t *nodes = _alloc_page();
 	memset(nodes, 0, PAGE_SIZE);
 
@@ -95,7 +95,7 @@ void *kmallocu(size_t size)
 
 		/* there's enough free size to get another node in there */
 		if ((num_pages * PAGE_SIZE) > size) {
-			create_node((num_pages * PAGE_SIZE) - size, ptr + size, true);
+			create_node((num_pages * PAGE_SIZE) - size, (uint8_t*)ptr + size, true);
 		}
 	}
 	else { /* got a free node with the right size, remove it from the list and return the pointer */
@@ -107,7 +107,7 @@ void *kmallocu(size_t size)
 		append_node(&used_nodes, cur);
 
 		if  (cur->size > size) { /* create a block for the rest of the memory */
-			create_node(cur->size - size, cur->ptr + size, true);
+			create_node(cur->size - size, (uint8_t*)cur->ptr + size, true);
 			cur->size = size;
 		}
 	}

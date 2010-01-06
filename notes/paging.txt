@@ -1,0 +1,4 @@
+Page directory in sich selbst mappen 
+=> Page tables sind automatisch gemappt, sobald sie ins PDir eingetragen sind!
+
+!! Page tables müssen nicht mehr gemappt werden

@@ -2,6 +2,9 @@
 #include <string.h>
 #include <libutil.h>
 #include "console.h"
+#include "error.h"
+#include "gdt.h"
+#include "idt.h"
 #include "kernel.h"
 #include "multiboot.h"
 #include "mm/mm.h"
@@ -9,6 +12,8 @@
 int last_error; /* see error.h */
 
 mb_info_t mb_info;
+
+volatile int dummy;
 
 void kmain(int boot_magic, mb_info_t *boot_info)
 {
@@ -22,9 +27,14 @@ void kmain(int boot_magic, mb_info_t *boot_info)
 	}
 
 	printk(KERN_NOTICE "kOS booting...");
-	init_mm();
+	kassert(init_gdt() == OK);
+	kassert(init_idt() == OK);
+	kassert(init_mm()  == OK);
 
 	printk(KERN_NOTICE "kOS booted.");
+
+	enable_intr();
+	dummy = 0/0;
 	return;
 
 	for (;;) {

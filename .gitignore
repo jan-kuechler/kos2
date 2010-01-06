@@ -3,6 +3,8 @@
 *.o
 *.exe
 *.bak
+*.iso
+*.sys
 test-*
 *-
 

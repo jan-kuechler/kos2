@@ -35,7 +35,7 @@
 static inline unsigned char bscanfwd(unsigned int map)
 {
 #ifdef CONF_DEBUG
-	int i = 0;
+	unsigned int i = 0;
 	for (; i < (sizeof(map) * 8); ++i) {
 		if (bissetn(map,i))
 			return i;

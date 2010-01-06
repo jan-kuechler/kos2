@@ -65,16 +65,16 @@ static inline void mark_used(paddr_t page)
 
 static inline void mark_range_free(paddr_t start, size_t num)
 {
-	int i=0;
+	unsigned int i=0;
 	for (; i < num; ++i)
 		mark_free((paddr_t)((uint8_t*)start + (i*PAGE_SIZE)));
 }
 
 static inline void mark_range_used(paddr_t start, size_t num)
 {
-	int i=0;
+	unsigned int i=0;
 	for (; i < num; ++i)
-		mark_used(start + (i*PAGE_SIZE));
+		mark_used((paddr_t)((uint8_t*)start + (i*PAGE_SIZE)));
 }
 
 static inline bool is_free(paddr_t page)
@@ -84,9 +84,9 @@ static inline bool is_free(paddr_t page)
 
 static inline bool is_range_free(paddr_t start, size_t num)
 {
-	int i=0;
+	unsigned int i=0;
 	for (; i < num; ++i) {
-		if (!is_free(start + (i * PAGE_SIZE)))
+		if (!is_free((uint8_t*)start + (i * PAGE_SIZE)))
 			return false;
 	}
 	return true;
@@ -121,13 +121,13 @@ static paddr_t find(size_t num, paddr_t start, paddr_t end)
 	int count = 0;
 	paddr_t result = NO_PAGE;
 
-	int i=0;
+	unsigned int i=0;
 
 	if (end_pos)
 		end_index--;
 
 	if (start_pos) {
-		int i=0;
+		i=0;
 		for (i = start_pos; i < MMAP_BITS; ++i) {
 			if (test(start_index, i, num, &count, &result))
 				return result;
@@ -222,7 +222,7 @@ bool mm_alloc_phys_range(paddr_t start, size_t num)
 
 	int i=0;
 	for (; i < num; ++i) {
-		if (!is_free(start + i * PAGE_SIZE)) {
+		if (!is_free((uint8_t*)start + i * PAGE_SIZE)) {
 			seterr(E_NO_MEM);
 			return false;
 		}
@@ -311,7 +311,7 @@ static enum block_type get_avail_block(paddr_t *start, size_t *len, size_t i)
 	return USABLE_BLOCK;
 }
 
-void init_mm(void)
+int init_mm(void)
 {
 	printk(KERN_DEBUG "Initializing memory manager");
 
@@ -322,7 +322,8 @@ void init_mm(void)
 	mem_end   = NULL;
 
 	if (!bisset(mb_info.flags, MB_MMAP)) {
-		panic("No mulitboot memory map available.");
+		printk(KERN_ERR "No mulitboot memory map available.");
+		return -E_UNKNOWN;
 	}
 
 	int i=0;
@@ -342,7 +343,7 @@ void init_mm(void)
 		if (!IS_PAGE_ALIGNED(start)) {
 			paddr_t aligned = PAGE_ALIGN_ROUND_UP(start);
 			printk(KERN_DEBUG " align %p to %p\n", start, aligned);
-			ptrdiff_t offs = aligned - start;
+			ptrdiff_t offs = (uint8_t*)aligned - (uint8_t*)start;
 			len -= offs;
 			start = aligned;
 		}
@@ -380,4 +381,5 @@ void init_mm(void)
 	                 "Usable memory: %dmb\n",
 	                 total_mem / MEGABYTE,
 	                 PAGES_TO_MEGABYTE(mm_num_free_pages()));
+	return OK;
 }
