@@ -31,8 +31,6 @@
 
 extern mb_info_t mb_info;
 
-linker_symbol(kernel_phys_start);
-linker_symbol(kernel_phys_end);
 linker_symbol(kernel_start);
 linker_symbol(kernel_end);
 linker_symbol(kernel_size);

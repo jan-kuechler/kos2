@@ -4,8 +4,9 @@ section .text
 %define IRQ_BASE 0x20     ; as in idt.h
 %define GDT_SEL_DATA 0x10 ; as in gdt.h
 
-extern idt_handle_int
+extern idt_handle_int ; idt.c
 
+; Normal interrupt service routine
 %macro isr 1
 global isr_stub_%1
 isr_stub_%1:
@@ -14,6 +15,7 @@ isr_stub_%1:
 	jmp  isr_common
 %endmacro
 
+; ISR for interrupts with error code
 %macro isr_ec 1
 global isr_stub_%1
 isr_stub_%1:

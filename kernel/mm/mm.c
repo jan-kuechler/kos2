@@ -1,17 +1,24 @@
 #include <bitop.h>
 #include <multiboot.h>
-#include <page.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
+#include <kos/config.h>
 
 #include "error.h"
 #include "elf.h"
 #include "kernel.h"
 #include "mm/dma.h"
 #include "mm/mm.h"
+#include "mm/page.h"
 
 #include "intern.h"
+
+#ifdef CONF_SAFE_KMEM
+#define _fail(...) panic(__VA_ARGS__);
+#else
+#define _fail(...)
+#endif
 
 enum block_type
 {
@@ -162,6 +169,7 @@ paddr_t mm_alloc_page(void)
 {
 	paddr_t page = find(1, dma_end, mem_end);
 	if (page == NO_PAGE) {
+		_fail("Failed to allocate one page.");
 		seterr(E_NO_MEM);
 		return NO_PAGE;
 	}
@@ -173,7 +181,7 @@ void mm_free_page(paddr_t page)
 {
 	if (page == NO_PAGE)
 		return;
-	if (!IS_PAGE_ALIGNED(page))
+	if (!page_aligned(page))
 		seterr(E_ALIGN);
 	else
 		mark_free(page);
@@ -182,12 +190,14 @@ void mm_free_page(paddr_t page)
 paddr_t mm_alloc_range(size_t num)
 {
 	if (!num) {
+		_fail("Invalid call to mm_alloc_range.");
 		seterr(E_INVALID);
 		return NO_PAGE;
 	}
 
 	paddr_t start = find(num, dma_end, mem_end);
 	if (start == NO_PAGE) {
+		_fail("Failed to allocate %d pages.", num);
 		seterr(E_NO_MEM);
 		return NO_PAGE;
 	}
@@ -201,7 +211,7 @@ void mm_free_range(paddr_t start, size_t num)
 	if (start == NO_PAGE)
 		return;
 
-	if (!IS_PAGE_ALIGNED(start))
+	if (!page_aligned(start))
 		seterr(E_ALIGN);
 	else if (!num)
 		seterr(E_INVALID);
@@ -211,11 +221,13 @@ void mm_free_range(paddr_t start, size_t num)
 
 bool mm_alloc_phys_range(paddr_t start, size_t num)
 {
-	if (!IS_PAGE_ALIGNED(start)) {
+	if (!page_aligned(start)) {
+		_fail("Invalid call to mm_alloc_phys_range (not aligned).");
 		seterr(E_ALIGN);
 		return false;
 	}
 	if (!num) {
+		_fail("Invalid call to mm_alloc_phys_range.");
 		seterr(E_INVALID);
 		return false;
 	}
@@ -223,6 +235,7 @@ bool mm_alloc_phys_range(paddr_t start, size_t num)
 	int i=0;
 	for (; i < num; ++i) {
 		if (!is_free((uint8_t*)start + i * PAGE_SIZE)) {
+			_fail("mm_alloc_phys_range() failed, memory is not free.");
 			seterr(E_NO_MEM);
 			return false;
 		}
@@ -233,7 +246,7 @@ bool mm_alloc_phys_range(paddr_t start, size_t num)
 
 void mm_free_phys_range(paddr_t start, size_t num)
 {
-	if (!IS_PAGE_ALIGNED(start)) {
+	if (!page_aligned(start)) {
 		seterr(E_ALIGN);
 		return;
 	}
@@ -254,6 +267,7 @@ paddr_t mm_alloc_dma(void)
 			return dma_addrs[i];
 		}
 	}
+	_fail("Failed to alloc dma address.");
 	seterr(E_NO_MEM);
 	return NO_PAGE;
 }
@@ -340,7 +354,7 @@ int init_mm(void)
 
 		printk(KERN_DEBUG "Memory block: %dkb at %p\n", len/1024, start);
 
-		if (!IS_PAGE_ALIGNED(start)) {
+		if (!page_aligned(start)) {
 			paddr_t aligned = PAGE_ALIGN_ROUND_UP(start);
 			printk(KERN_DEBUG " align %p to %p\n", start, aligned);
 			ptrdiff_t offs = (uint8_t*)aligned - (uint8_t*)start;
@@ -354,7 +368,7 @@ int init_mm(void)
 		mark_range_free(start, NUM_PAGES(len));
 	}
 
-	mark_range_used(kernel_phys_start, NUM_PAGES(kernel_phys_end - kernel_phys_start));
+	mark_range_used(kernel_start, NUM_PAGES(kernel_end - kernel_start));
 	mb_mod_t *mod = (mb_mod_t*)mb_info.mods_addr;
 	for (i=0; i < mb_info.mods_count; ++i) {
 		mark_range_used((paddr_t)mod, NUM_PAGES(sizeof(mb_mod_t)));

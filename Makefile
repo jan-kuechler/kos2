@@ -25,6 +25,8 @@ LIBS = -lutil -lc -lgcc
 
 LUA = lua.exe
 
+.PHONY: clean partclean todo run iso prepare
+
 all: kernel
 
 kernel: build/kos.sys
@@ -35,6 +37,9 @@ iso:
 
 run:
 	@build/scripts/run.sh
+	
+todo:
+	@grep -e TODO -e FIXME $(SRCFILES)
 
 prepare:
 	@$(LUA) build/scripts/util.lua prepare

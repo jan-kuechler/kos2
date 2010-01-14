@@ -11,6 +11,7 @@ enum error_code
 	E_NO_MEM,     /**< Not enough memory */
 	E_INVALID,    /**< Invalid parameter */
 	E_IMPL,       /**< Not implemented */
+	E_PRESENT,    /**< Allready present */
 	E_UNKNOWN,    /**< Unknown error */
 	E_NUM_ERRORS, /**< Invalid error code */
 };

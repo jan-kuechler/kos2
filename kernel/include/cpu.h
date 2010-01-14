@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+struct mm_context; /* See mm/types.h */
+
 /** The stack frame layout after an interrupt */
 struct stack_frame {
 	uint32_t edi;
@@ -28,6 +30,13 @@ struct stack_frame {
 	uint32_t u_esp;
 	uint32_t u_ss;
 } __attribute__((packed));
+
+inline struct mm_context *cpu_get_context(void)
+{
+	/* TODO: dummy! */
+	extern struct mm_context *kernel_context;
+	return kernel_context;
+}
 
 /**
  * Reads the CR2 status register

@@ -1,0 +1,30 @@
+Treiber im Kernel mit 2 Syscalls:
+
+	int klog_put(int lvl, const char *ident, const char *msg);
+	int klog_get(unsigned int *prio, char *msg, unsigned int maxlen)
+	
+Daemon im Userspace, der regelm‰ﬂig neue Nachrichten in /var/log/messages oder so schreibt.
+Bei Panic werden die letzten paar Nachrichten angezeigt.
+
+printk schreibt auch ins log (console wrapper um log funktionen).
+
+---
+
+#define LOG_IDENT_SIZE 64
+
+enum log_level
+{
+	LOG_EMERG,
+	LOG_ALERT,
+	LOG_CRIT,
+	LOG_ERR,
+	LOG_WARNING,
+	LOG_NOTICE,
+	LOG_INFO,
+	LOG_DEBUG,
+}
+
+int klog_put(int lvl, const char *ident, const char *msg);
+int klog_put(int lvl, const char *ident, const char *msg);
+
+ident is maximal char[LOG_IDENT_SIZE] with char[LOG_IDENT_SIZE-1] == '\0'

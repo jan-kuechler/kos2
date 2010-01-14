@@ -6,7 +6,6 @@ SECTIONS
 	. = LOAD_ADDR;
 
 	kernel_start = .;
-	kernel_phys_start = .;
 
 	.header : AT(ADDR(.header))
 	{
@@ -44,7 +43,5 @@ SECTIONS
 	. = ALIGN(4096);
 
 	kernel_end = .;
-	kernel_phys_end = .;
-
 	kernel_size = kernel_end - kernel_start;
 }

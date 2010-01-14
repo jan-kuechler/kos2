@@ -6,10 +6,10 @@
 #define PAGIN_ENABLED 0
 
 #include "kernel.h"
-#include "page.h"
 #include "mm/kmalloc.h"
 #include "mm/mm.h"
-//#include "mm/virt.h"
+#include "mm/page.h"
+#include "mm/virt.h"
 //#include "mm/util.h"
 
 typedef struct mem_node
@@ -24,13 +24,17 @@ static mem_node_t *used_nodes;
 static mem_node_t *free_nodes;
 static mem_node_t *unused_nodes;
 
-#if PAGIN_ENABLED
-#define _alloc_range km_alloc_range
-#define _alloc_page  km_alloc_page
-#else
-#define _alloc_range mm_alloc_range
-#define _alloc_page  mm_alloc_page
-#endif
+static inline vaddr_t _alloc_page()
+{
+	paddr_t paddr = mm_alloc_page();
+	return vm_alloc_kernel_addr(paddr, PAGE_SIZE);
+}
+
+static inline vaddr_t _alloc_range(size_t num)
+{
+	paddr_t paddr = mm_alloc_range(num);
+	return vm_alloc_kernel_addr(paddr, num * PAGE_SIZE);
+}
 
 static inline void append_node(mem_node_t **list, mem_node_t *node)
 {

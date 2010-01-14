@@ -40,18 +40,18 @@ static inline uint16_t CH(char c)
 
 static int init(struct con_state *s)
 {
-	/* ignore old state, this is the boot console it
-	 * will be empty anyways */
+	// ignore old state, this is the boot console it
+	// will be empty anyways
 	 __unused(s);
 
 	state.height = HEIGHT;
 	state.width  = WIDTH;
 	state.x      = 0;
 	state.y      = 0;
-	state.color  = 0x07; /* bright grey on black */
+	state.color  = 0x07; // bright grey on black
 	state.buffer = VIDEO_MEM;
 
-	/* hide cursor (put it in 0x07D0 = 26. row)*/
+	// hide cursor (put it in 0x07D0 = 26. row)
 	outb(0x3D4, 14);
 	outb(0x3D5, 0x07);
 	outb(0x3D4, 15);
@@ -121,7 +121,7 @@ static int putc(char c)
 
 static int loglevel(void)
 {
-	return 7; /* everything */
+	return 7; // everything
 }
 
 static int get_state(struct con_state *s)

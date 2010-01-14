@@ -4,7 +4,7 @@
 /* some internal macros for mm */
 
 #include "bitop.h"
-#include "page.h"
+#include "mm/page.h"
 //#include "mm/virt.h"
 #include "mm/types.h"
 
@@ -18,8 +18,6 @@ static inline uint32_t getflags(pany_entry_t entry)
 {
 	return (uint32_t)bmask((uint32_t)entry, BMASK_PE_FLAGS);
 }
-
-#define CHECK_ALIGN(var) kassert(IS_PAGE_ALIGNED(var))
 
 #define page2addr(page) ((paddr_t)(page * PAGE_SIZE))
 #define addr2page(addr) ((uint32_t)addr / PAGE_SIZE)

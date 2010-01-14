@@ -2,3 +2,64 @@ Page directory in sich selbst mappen
 => Page tables sind automatisch gemappt, sobald sie ins PDir eingetragen sind!
 
 !! Page tables müssen nicht mehr gemappt werden
+
+###############################################################################
+
+pro pdir eintrag: 0x400000 bytes =   0x400 pages
+                   4194304 bytes =    1024 pages
+
+kernel_code:    0x20000000 bytes = 0x20000 pages
+= einträge: [0x00, 0x80) = [0x00, 0x7F]
+
+==>
+
+pdir = {
+	[   0] = ptab_0,
+	[   1] = ptab_1,
+	...
+	[0x7F] = pdir,
+	...
+}
+
+0x7F = 0b0001111111
+
+=> Addresse: 0x1FC00000 
+
+#define PDIR_PDIR_INDEX (KERNEL_MEM_END - BYTES_PER_PDIR_ENTRY) >> PE_ADDR_SHIFT
+
+#define PDIR_PDIR_INDEX 0x7F
+#define PTAB_VADDR_BASE 0x1FC00000
+
+=> 
+/**
+ * Returns the virtual address of the page table of the given vaddr.
+ * @param vaddr The virtual address, who's page table's address is returned
+ * @return The vaddr of the page table
+ */
+inline vaddr_t get_ptab_vaddr(vaddr_t vaddr)
+{
+	return PTAB_VADDR_BASE + ??
+}
+
+---------------------------------------
+pdir_index = (vaddr) >> 22
+ptab_index = ((vaddr) >> 12) % 1024
+
+inline vaddr_t pdir_index_to_addr(size_t index)
+{
+	return (vaddr_t)(index << PE_ADDR_SHIFT);
+}
+
+inline size_t pdir_addr_to_index(vaddr_t addr)
+{
+	return (size_t)(((uintptr_t)addr) >> PE_ADDR_SHIFT);
+}
+
+inline vaddr_t ptab_index_to_addr(size_t index)
+{
+}
+
+inline size_t ptab_addr_to_index(vaddr_t addr)
+{
+	
+}
