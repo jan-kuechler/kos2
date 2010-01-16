@@ -27,13 +27,15 @@ static mem_node_t *unused_nodes;
 static inline vaddr_t _alloc_page()
 {
 	paddr_t paddr = mm_alloc_page();
-	return vm_alloc_kernel_addr(paddr, PAGE_SIZE);
+	vaddr_t vaddr = vm_alloc_kernel_addr(paddr, PAGE_SIZE);
+	return vaddr;
 }
 
 static inline vaddr_t _alloc_range(size_t num)
 {
 	paddr_t paddr = mm_alloc_range(num);
-	return vm_alloc_kernel_addr(paddr, num * PAGE_SIZE);
+	vaddr_t vaddr = vm_alloc_kernel_addr(paddr, num * PAGE_SIZE);
+	return vaddr;
 }
 
 static inline void append_node(mem_node_t **list, mem_node_t *node)
@@ -126,7 +128,7 @@ void *kmalloc(size_t size)
 
 #ifdef CONF_SAFE_KMALLOC
 	if (!ptr) {
-		panic("kmalloc: failed to alloc %d uint8_ts.", size);
+		panic("kmalloc: failed to alloc %d bytes.", size);
 	}
 #endif
 

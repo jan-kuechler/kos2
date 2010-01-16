@@ -44,4 +44,21 @@ inline void seterr(int err)
 	last_error = err;
 }
 
+#define MAP(x) case x: return #x
+inline const char *strerr(int err)
+{
+	if (err < 0)
+		err = -err;
+	switch (err) {
+	MAP(OK);
+	MAP(E_ALIGN);
+	MAP(E_NO_MEM);
+	MAP(E_INVALID);
+	MAP(E_IMPL);
+	MAP(E_PRESENT);
+	MAP(E_UNKNOWN);
+	default: return "<invalid>";
+	}
+}
+
 #endif /*ERROR_H*/

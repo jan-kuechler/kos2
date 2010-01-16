@@ -15,7 +15,7 @@ ptab_t kernel_ptabs[NUM_KERNEL_PTABS];
 static bool paging_enabled = false;
 
 #ifdef CONF_SAFE_VMEM
-#define _fail(...) panic(__VA_ARGS__);
+#define _fail(fmt, ...) panic("[%s] "fmt, __func__, ##__VA_ARGS__);
 #else
 #define _fail(...)
 #endif
@@ -26,7 +26,7 @@ static bool paging_enabled = false;
 #define pdir_index(addr) (addr2page(addr) / PDIR_LEN)
 #define ptab_index(addr) (addr2page(addr) % PTAB_LEN)
 
-#define get_addr(pdi,pti,offs) ((pdi << PE_ADDR_SHIFT) + (pti << PAGE_SHIFT) + offs)
+#define get_addr(pdi,pti,offs) (((pdi) << PE_ADDR_SHIFT) + ((pti) << PAGE_SHIFT) + (offs))
 
 static inline paddr_t getaddr(pany_entry_t entry)
 {
@@ -51,10 +51,13 @@ static inline vaddr_t get_ptab(pdir_t pdir, size_t pdi)
 
 	if (pdir == cpu_get_context()->pdir) {
 		// this works, because the page directory is mapped into itself
+		//printk(KERN_DEBUG "get_ptab => %p", (vaddr_t)(PTAB_BASE_ADDR +	(PAGE_SIZE * pdi)));
 		return (vaddr_t)(PTAB_BASE_ADDR +	(PAGE_SIZE * pdi));
 	}
 	else {
-		return vm_alloc_kernel_addr(getaddr(pdir[pdi]), PAGE_SIZE);
+		vaddr_t addr = vm_alloc_kernel_addr(getaddr(pdir[pdi]), PAGE_SIZE);
+		//printk(KERN_DEBUG "get_ptab => mapping to %p", addr);
+		return addr;
 	}
 }
 
@@ -148,8 +151,8 @@ int vm_map(struct mm_context *context, vaddr_t vaddr, paddr_t paddr,
 		paddr_t p = (paddr_t)((uintptr_t)paddr + (i * PAGE_SIZE));
 		err = do_map(context->pdir, v, p, flags, false);
 		if (err != OK) {
-			_fail("vm_map(%p, %p, %p, %b, %d) failed.", context->pdir, vaddr,
-			      paddr, flags, num);
+			_fail("do_map(%p, %p, %p, %b, false) failed with error %s",
+			      context->pdir, v, p, flags, strerr(err));
 			break;
 		}
 	}
@@ -178,20 +181,24 @@ vaddr_t vm_alloc_addr(struct mm_context *context, paddr_t paddr, size_t length,
                       vaddr_t vstart, vaddr_t vend, int flags)
 {
 	if (!context || !paddr || !length || bnotset(flags, MMF_PRESENT)) {
+		_fail("invalid parameters");
 		seterr(E_INVALID);
 		return NULL;
 	}
 
 	align_addr_and_size(&paddr, &length);
+	size_t pages = NUM_PAGES(length);
 
-	vaddr_t vaddr = find_addrs(context->pdir, vstart, vend, NUM_PAGES(length));
+	vaddr_t vaddr = find_addrs(context->pdir, vstart, vend, pages);
 	if (!vaddr) {
+		_fail("no free address for %d page%s in [%p, %p]", pages, pages>1?"s":"", vstart, vend);
 		seterr(E_NO_MEM);
 		return NULL;
 	}
 
 	int result = vm_map(context, vaddr, paddr, flags, NUM_PAGES(length));
 	if (result != OK) {
+		_fail("failed to map pages.");
 		seterr(result);
 		return NULL;
 	}
@@ -200,8 +207,9 @@ vaddr_t vm_alloc_addr(struct mm_context *context, paddr_t paddr, size_t length,
 
 int vm_free_addr(struct mm_context *context, vaddr_t vaddr, size_t length)
 {
-	if (!context || !vaddr || !length)
+	if (!context || !vaddr || !length) {
 		return -E_INVALID;
+	}
 
 	align_addr_and_size(&vaddr, &length);
 
@@ -213,8 +221,9 @@ static vaddr_t find_addrs(pdir_t pdir, vaddr_t vstart, vaddr_t vend, int num)
 	uintptr_t lower = (uintptr_t)vstart;
 	uintptr_t upper = (uintptr_t)vend;
 
-	if (!pdir || !num || ((upper - lower) / PAGE_SIZE) < num)
+	if (!pdir || !num || ((upper - lower) / PAGE_SIZE) < num) {
 		return NULL;
+	}
 
 	int count = 0;
 	uintptr_t result = lower;
@@ -226,12 +235,12 @@ static vaddr_t find_addrs(pdir_t pdir, vaddr_t vstart, vaddr_t vend, int num)
 			ptab_t ptab = get_ptab(pdir, pdi);
 
 			for (; pti < PTAB_LEN; ++pti) {
-				if (bisset(getflags(ptab[pti]), MMF_PRESENT)) {
+				if (bnotset(getflags(ptab[pti]), MMF_PRESENT)) {
 					count++;
 				}
 				else {
 					count = 0;
-					result = get_addr(pdi,pti,0);
+					result = get_addr(pdi,pti+1,0);
 				}
 			}
 
@@ -278,7 +287,7 @@ static int do_map(pdir_t pdir, vaddr_t vaddr, paddr_t paddr,
 
 	size_t pti = ptab_index(vaddr);
 
-	bool is_mapped = bisset(ptab[pti], MMF_PRESENT);
+	bool is_mapped = bisset(getflags(ptab[pti]), MMF_PRESENT);
 	if (is_mapped && !override) {
 		put_ptab(pdir, ptab);
 		return -E_PRESENT;
