@@ -5,6 +5,7 @@
 #include "idt.h"
 #include "kernel.h"
 #include "ports.h"
+#include "util/list.h"
 
 #define PIC1      0x20
 #define PIC2      0xA0
@@ -34,6 +35,8 @@
 #define TASK_GATE    0x5
 
 struct idt_entry idt[IDT_SIZE] __attribute__((aligned(8)));
+
+list_t irq_handler[NUM_IRQ];
 
 /* assembler stubs exported by int.s */
 extern void isr_null_handler(void);
@@ -114,6 +117,28 @@ static const char *fault_name[] = {
 	"Reserved",
 };
 
+int idt_register_irq(int irq, irq_handler_t handler)
+{
+	if (irq < 0 || irq >= NUM_IRQ)
+		return -E_INVALID;
+	list_add_back(&irq_handler[irq], handler);
+	return OK;
+}
+
+void idt_unregister_irq(int irq, irq_handler_t handler)
+{
+	if (irq < 0 || irq >= NUM_IRQ)
+		return;
+
+	list_entry_t *entry;
+	list_iterate(entry, &irq_handler[irq]) {
+		if (entry->data == handler) {
+			list_del_entry(&irq_handler[irq], entry);
+			return;
+		}
+	}
+}
+
 static void idt_handle_exception(uint32_t *esp)
 {
 	struct stack_frame *stack = (struct stack_frame*)*esp;
@@ -121,6 +146,7 @@ static void idt_handle_exception(uint32_t *esp)
 	printk(KERN_CRIT "kOS triggered an exception!");
 	printk(KERN_CRIT "Exception: #%02d (%s)", stack->intr, fault_name[stack->intr]);
 	cpu_print_stack(stack);
+	panic("Cannot resume.");
 }
 
 static void idt_handle_irq(uint32_t *esp)
@@ -138,9 +164,11 @@ static void idt_handle_irq(uint32_t *esp)
 		}
 	}
 
-	//if (irq_handlers[irq]) {
-	//	irq_handlers[irq](irq, esp);
-	//}
+	list_entry_t *entry;
+	list_iterate(entry, &irq_handler[irq]) {
+		irq_handler_t handler = entry->data;
+		handler(irq, esp);
+	}
 
 irq_handeled:
 	if (irq >= 8)
@@ -174,6 +202,10 @@ int init_idt(void)
 
 	for (; i < IDT_SIZE; ++i) {
 		idt_set_gate(i, GDT_SEL_CODE, isr_null_handler, 0, IDT_INTR_GATE);
+	}
+
+	for (i=0; i < NUM_IRQ; ++i) {
+		list_init(&irq_handler[i]);
 	}
 
 	// there should be some sort of compile time 'for' with macros )-:

@@ -2,11 +2,13 @@
 #include <string.h>
 #include <libutil.h>
 #include "console.h"
+#include "debug.h"
 #include "error.h"
 #include "gdt.h"
 #include "idt.h"
 #include "kernel.h"
 #include "multiboot.h"
+#include "timer.h"
 #include "mm/mm.h"
 #include "mm/virt.h"
 
@@ -39,13 +41,20 @@ void kmain(int boot_magic, mb_info_t *boot_info)
 	verify_init(init_gdt(), "GDT");
 	verify_init(init_idt(), "IDT");
 	verify_init(init_mm(), "memory manager");
+	dbg_bochs_break();
 	verify_init(init_vmem(), "virtual memory");
+	dbg_bochs_break();
+	verify_init(init_timer(), "timer");
+	dbg_bochs_break();
 	printk(KERN_NOTICE "kOS booted.");
 
 	//enable_intr();
 	//printk(KERN_NOTICE "0/0:");
 	//dummy = 0/0;
-	return;
+	//return;
+
+	enable_intr();
+	asm volatile("int $0x20");
 
 	for (;;) {
 		asm("sti; hlt;");
@@ -60,7 +69,7 @@ void panic(const char *fmt, ...)
 	strafmt(buffer, fmt, args);
 	va_end(args);
 
-	printk(KERN_EMERG "Kernel panic: %s", buffer);
+	printk(KERN_EMERG "** Kernel panic **\n%s", buffer);
 
 	for (;;) {
 		asm("cli; hlt;");

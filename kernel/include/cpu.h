@@ -21,8 +21,8 @@ struct stack_frame {
 	uint32_t  fs;
 	uint32_t  gs;
 
-	uint32_t errc;
 	uint32_t intr;
+	uint32_t errc;
 
 	uint32_t eip;
 	uint32_t  cs;

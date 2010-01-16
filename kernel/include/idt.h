@@ -34,6 +34,9 @@ enum idt_gate_type {
 	IDT_TASK_GATE, /**< Hardware taskswitch */
 };
 
+/** An IRQ handler function */
+typedef void (*irq_handler_t)(int, uint32_t *);
+
 /**
  * Initializes the interrupt descriptor table.
  * @return error code
@@ -50,6 +53,21 @@ int init_idt(void);
  */
 void idt_set_gate(int intr, uint16_t selector, void *handler,
                   uint8_t dpl, enum idt_gate_type type);
+
+/**
+ * Registers an IRQ handler for an IRQ.
+ * @param irq     The IRQ
+ * @param handler Function to call on the IRQ
+ * @return error code
+ */
+int idt_register_irq(int irq, irq_handler_t handler);
+
+/**
+ * Unregisters an IRQ handler.
+ * @param irq     The IRQ
+ * @param handler Function to call on the IRQ
+ */
+void idt_unregister_irq(int irq, irq_handler_t handler);
 
 /**
  * Enables interrupts.
