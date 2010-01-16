@@ -1,0 +1,15 @@
+Pro Prozess:
+- pid
+- mm_context
+- threads
+
+Pro Thread:
+- stack
+- kernel stack (hier arbeitet der prozess im kernelmodus)
+
+Syscall:
+
+=> prozess wird unterbrochen,
+syscall handler auf den kernel-stack und zurück als prozess (im kernelmodus)
+syscall wird dann speziell beendet, sodass der richtige stack zurückgespielt wird.
+
