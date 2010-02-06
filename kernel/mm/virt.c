@@ -17,7 +17,7 @@ static bool paging_enabled = false;
 #ifdef CONF_SAFE_VMEM
 #define _fail(fmt, ...) panic("[%s] "fmt, __func__, ##__VA_ARGS__);
 #else
-#define _fail(...)
+#define _fail(fmt, ...) printk(KERN_ERR "[%s] " fmt, __func__, ##__VA_ARGS__)
 #endif
 
 #define page2addr(page) ((paddr_t)(page * PAGE_SIZE))
@@ -141,8 +141,12 @@ int vm_map(struct mm_context *context, vaddr_t vaddr, paddr_t paddr,
            int flags, size_t num)
 {
 	if (!vaddr || !page_aligned(vaddr) || !page_aligned(paddr) || !context ||
-	    !num || bnotset(flags, MMF_PRESENT))
+	    !num || bnotset(flags, MMF_PRESENT)) {
+		printk(KERN_ERR "[vm_map] invalid parameters");
+		printk(KERN_ERR "context: %p vaddr: %p paddr: %p", context, vaddr, paddr);
+		printk(KERN_ERR "flags: %b num: %d", flags, num);
 		return -E_INVALID;
+	}
 
 	int i=0;
 	int err = OK;

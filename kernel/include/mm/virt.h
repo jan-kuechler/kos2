@@ -16,6 +16,8 @@
 #define USER_MEM_START   ((vaddr_t)0x40000000)
 #define USER_MEM_END     ((vaddr_t)0xFFFFFFFF)
 
+#define USER_STACK_ADDR  USER_MEM_END
+
 #define NUM_KERNEL_PTABS  ((((uintptr_t)KERNEL_MEM_END - (uintptr_t)KERNEL_MEM_START) / PTAB_MEM) - 1)
 
 #define PTAB_BASE_INDEX  0x7F

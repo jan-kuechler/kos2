@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+struct proc;    /* See proc.h */
 struct mm_context; /* See mm/types.h */
 
 /** The stack frame layout after an interrupt */
@@ -31,12 +32,47 @@ struct stack_frame {
 	uint32_t u_ss;
 } __attribute__((packed));
 
+// TODO:
+enum sysflags
+{
+		SF_TRAP   = 0x0100,
+		SF_INTR,
+		SF_TASK,
+		SF_RESUME,
+		SF_VM86,
+		SF_ALIGN,
+		SF_VIRTIF,
+		SF_VIPEND,
+		SF_CPUID,
+};
+
+#define PROC_INIT_FLAGS 0x0202
+
+extern struct proc *current;
+
 inline struct mm_context *cpu_get_context(void)
 {
 	/* TODO: dummy! */
 	extern struct mm_context *kernel_context;
 	return kernel_context;
 }
+
+void cpu_set_context(struct mm_context *c);
+
+/**
+ * Returns the current proces.
+ * @return Process struct
+ */
+inline struct proc *cpu_cur_proc(void)
+{
+	return current;
+}
+
+/**
+ * Sets the next active process
+ * @param proc The process
+ */
+void cpu_set_proc(struct proc *proc, uint32_t *stackptr);
 
 /**
  * Reads the CR2 status register

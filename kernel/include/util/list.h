@@ -18,6 +18,10 @@ typedef struct list
 	size_t size;
 } list_t;
 
+#define STATIC_LIST(name) \
+	static list_t __##name = {NULL, NULL, 0}; \
+	static list_t *name = &__##name
+
 /**
  * Initializes a list.
  * @param list The list
@@ -26,7 +30,7 @@ inline void list_init(list_t *list)
 {
 	list->front = NULL;
 	list->back = NULL;
-	list->size = NULL;
+	list->size = 0;
 }
 
 /**

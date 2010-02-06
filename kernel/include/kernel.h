@@ -1,8 +1,8 @@
 #ifndef KERNEL_H
 #define KERNEL_H
 
+#include <compiler.h>
 #include <kos/config.h>
-#include "linker.h"
 #include "multiboot.h"
 
 #define LOGLVL_SILENT  -1
@@ -34,6 +34,8 @@ extern mb_info_t mb_info;
 linker_symbol(kernel_start);
 linker_symbol(kernel_end);
 linker_symbol(kernel_size);
+linker_symbol(bss_start);
+linker_symbol(bss_end);
 
 /**
  * Prints a kernel message.
@@ -49,5 +51,14 @@ int printk(const char *fmt, ...);
  * @param ... Format arguments
  */
 void panic(const char *fmt, ...);
+
+/** Type for panic handlers */
+typedef void (*panic_handler_t)(void);
+
+/**
+ * Adds a function to be called on panic.
+ * @param handler The function to call
+ */
+void add_panic_handler(panic_handler_t handler);
 
 #endif /*KERNEL_H*/

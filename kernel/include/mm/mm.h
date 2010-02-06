@@ -1,5 +1,5 @@
-#ifndef MM_H
-#define MM_H
+#ifndef MM_MM_H
+#define MM_MM_H
 
 #include <stdbool.h>
 #include <stdlib.h>
@@ -85,4 +85,4 @@ size_t mm_num_pages(void);
  */
 size_t mm_num_free_pages(void);
 
-#endif /*MM_H*/
+#endif /*MM_MM_H*/

@@ -2,6 +2,7 @@
 #include "idt.h"
 #include "kernel.h"
 #include "ports.h"
+#include "proc.h"
 #include "timer.h"
 
 #define TIMER_DATA 0x43
@@ -15,6 +16,7 @@ static void timer_irq(int irq, uint32_t *esp)
 {
 	timer_ticks++;
 	//printk("Tick %d", (uint32_t)timer_ticks);
+	sched_update();
 }
 
 int init_timer(void)

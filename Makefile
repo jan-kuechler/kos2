@@ -4,8 +4,12 @@ SRCFILES = $(shell find kernel -name "*.c")
 HDRFILES = $(shell find kernel -name "*.h")
 ASMFILES = $(shell find kernel -name "*.s")
 
+DRVFILES = $(shell find driver -name "*.c")
+
 OBJFILES = $(patsubst kernel/%.c,build/objs/%.o,$(SRCFILES))
 ASMOBJS  = $(patsubst kernel/%.s,build/objs/%.s.o,$(ASMFILES))
+
+DRVOBJS  = $(patsubst driver/%.c,build/driver/%.o,$(DRVFILES))
 
 INCLUDE_DIRS = -Ikernel/include -Ishare/include \
                -Ilib/libc/includes -Ilib/libc/internals \
@@ -18,9 +22,13 @@ ASMFLAGS = -felf
 
 OPTIMIZATION = -O1
 
+CFLAGS_ALL = -std=gnu99 -Wall -static $(OPTIMIZATION) -g -ffreestanding -nostdlib\
+              -nostartfiles -nodefaultlibs -fno-builtin $(INCLUDE_DIRS)
+
 CC = i586-elf-gcc
-CFLAGS = -std=gnu99 -Wall -static $(OPTIMIZATION) -g -DKERNEL -ffreestanding \
-         -nostdlib -nostartfiles -nodefaultlibs -fno-builtin $(INCLUDE_DIRS)
+CFLAGS = $(CFLAGS_ALL) -DKERNEL
+         
+DRIVER_FLAGS = $(CFLAGS_ALL) -DDRIVER -Idriver/include      
          
 LD = i586-elf-ld
 LDFLAGS = -Llib -static -Tbuild/scripts/kernel.ld
@@ -29,7 +37,7 @@ LIBS = -lutil -lc -lgcc
 
 LUA = lua.exe
 
-.PHONY: clean partclean todo run iso prepare
+.PHONY: clean partclean todo run iso prepare driver
 
 all: kernel
 
@@ -54,8 +62,8 @@ todo:
 prepare:
 	@$(LUA) build/scripts/util.lua prepare
 
-build/kos.sys: $(OBJFILES) $(ASMOBJS)
-	@$(LD) $(LDFLAGS) -obuild/kos.sys $(ASMOBJS) $(OBJFILES) $(LIBS) -Map build/linkmap.txt
+build/kos.sys: $(OBJFILES) $(ASMOBJS) $(DRVOBJS)
+	@$(LD) $(LDFLAGS) -obuild/kos.sys $(ASMOBJS) $(OBJFILES) $(DRVOBJS) $(LIBS) -Map build/linkmap.txt
 	
 build/dump.txt: build/kos.sys
 	@objdump -d build/kos.sys > build/dump.txt
@@ -66,6 +74,11 @@ build/.rules: $(SRCFILES) Makefile
 	echo -n $(subst kernel,build/objs,$(dir $(file))) >> build/.rules;\
 	$(CC) $(CFLAGS) -MM $(file) >> build/.rules;\
 	echo -e "\t@$(CC) $(CFLAGS) -o$(patsubst kernel/%.c,build/objs/%.o,$(file)) -c $(file)" >> build/.rules;\
+	)
+	@$(foreach file,$(DRVFILES),\
+	echo -n $(subst driver,build/driver,$(dir $(file))) >> build/.rules;\
+	$(CC) $(CFLAGS) -MM $(file) >> build/.rules;\
+	echo -e "\t@$(CC) $(DRIVER_FLAGS) -o$(patsubst driver/%.c,build/driver/%.o,$(file)) -c $(file)" >> build/.rules;\
 	)
 	@$(foreach file,$(ASMFILES),\
 	echo "$(patsubst kernel/%.s,build/objs/%.s.o,$(file)): $(file)" >> build/.rules;\

@@ -10,6 +10,9 @@ local PATH_SEP = "\\"
 local SEARCH_PREFIX = "kernel" .. PATH_SEP
 local OUT_PREFIX    = "build" .. PATH_SEP .. "objs" .. PATH_SEP
 
+local DRV_SEARCH = "driver" .. PATH_SEP
+local DRV_OUT    = "build" .. PATH_SEP .. "driver" .. PATH_SEP
+
 local ignore_list = {
 	["include"] = true,
 }
@@ -47,8 +50,15 @@ function CreateBuildDir(cur, base)
 	IterateDirectories(SEARCH_PREFIX .. base..cur, CreateBuildDir, base .. cur .. PATH_SEP)
 end
 
+local CreateDriverDir
+function CreateDriverDir(cur, base)
+	CreateDirectory(DRV_OUT .. base..cur)
+	IterateDirectories(DRV_SEARCH .. base..cur, CreateDriverDir, base .. cur .. PATH_SEP)
+end
+
 local function CreateObjectDirs()
 	IterateDirectories(SEARCH_PREFIX, CreateBuildDir, "")
+	IterateDirectories(DRV_SEARCH, CreateDriverDir, "")
 end
 
 local opts = {}
@@ -61,4 +71,5 @@ end
 
 if opts.cleanup then
 	RemoveDirectory(OUT_PREFIX)
+	RemoveDirectory(DRV_OUT)
 end

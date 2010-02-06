@@ -1,5 +1,25 @@
 #include "cpu.h"
 #include "kernel.h"
+#include "proc.h"
+
+struct proc *current;
+
+void cpu_set_proc(struct proc *proc, uint32_t *stackptr)
+{
+	struct proc *prev = current;
+	if (current != proc) {
+		current = proc;
+		*stackptr = proc->kstack.virt;
+	}
+	if (!prev || prev->context != proc->context) {
+		cpu_set_context(current->context);
+	}
+}
+
+void cpu_set_context(struct mm_context *ctx)
+{
+	//TODO: dummy
+}
 
 void cpu_print_stack(struct stack_frame *stack)
 {

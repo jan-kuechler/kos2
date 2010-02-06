@@ -18,6 +18,11 @@ SECTIONS
 		init_data_start = .;
 		*(.init.data)
 		init_data_end = .;
+		
+		init_drv_start = .;
+		*(.init.drv)
+		init_drv_end = .;
+		
 		init_param_start = .;
 		*(.init.param)
 		init_param_end = .;
@@ -35,10 +40,12 @@ SECTIONS
 	{
 		*(.data)
 	}
+	bss_start = .;
 	.bss ALIGN(4096) : AT(ADDR(.bss))
 	{
 		*(.bss)
 	}
+	bss_end = .;
 
 	. = ALIGN(4096);
 

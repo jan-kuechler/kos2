@@ -5,6 +5,7 @@
 #include "idt.h"
 #include "kernel.h"
 #include "ports.h"
+#include "proc.h"
 #include "util/list.h"
 
 #define PIC1      0x20
@@ -180,6 +181,8 @@ uint32_t idt_handle_int(uint32_t esp)
 {
 	struct stack_frame *stack = (struct stack_frame*)esp;
 
+	sched_put(cpu_cur_proc());
+
 	if (stack->intr < IRQ_BASE) {
 		idt_handle_exception(&esp);
 	}
@@ -192,6 +195,12 @@ uint32_t idt_handle_int(uint32_t esp)
 	else {
 		panic("Unhandled interrupt: 0x%x", stack->intr);
 	}
+
+	struct proc *next = sched_get();
+	if (!next) {
+		panic("no proc to activate...");
+	}
+	cpu_set_proc(next, &esp);
 
 	return esp;
 }
