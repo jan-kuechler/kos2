@@ -1,4 +1,5 @@
 #include "cpu.h"
+#include "kernel.h"
 #include "proc.h"
 #include "util/list.h"
 
@@ -25,7 +26,9 @@ void sched_update(void)
 {
 	struct proc *cur = cpu_cur_proc();
 	if (!cur || cur->ticks-- <= 0 || cur->status == PROC_BLOCKED) {
+		if(cur) cur->ticks = PROC_TICKS;
 		next = list_front(procs);
+		printk(KERN_INFO "sched: next process is '%s'", next->cmdline);
 	}
 	else {
 		next = cur;

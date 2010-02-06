@@ -107,7 +107,7 @@ struct proc *proc_create(struct proc *parent, const char *cmdline, uintptr_t ent
 	proc->status = PROC_BLOCKED;
 
 	proc->priority = 1;
-	proc->ticks = 5;
+	proc->ticks = PROC_TICKS;
 
 	bool new_context = false;
 	if (!context) {

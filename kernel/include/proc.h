@@ -5,6 +5,10 @@
 #include <stdint.h>
 #include "mm/types.h"
 
+enum {
+	PROC_TICKS = 5,
+};
+
 /** Process id type */
 typedef uint32_t pid_t;
 
