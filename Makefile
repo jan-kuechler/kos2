@@ -95,3 +95,14 @@ clean: partclean
 	
 partclean:
 	@rm -f $(OBJFILES) $(ASMOBJS)
+	
+trouble:
+	@echo Object files:
+	@echo $(OBJFILES)
+	@echo ================
+	@echo Driver Objects:
+	@echo $(DRVOBJS)
+	@echo ================
+	@echo Rules:
+	@cat  build/.rules
+	
