@@ -181,7 +181,7 @@ uint32_t idt_handle_int(uint32_t esp)
 {
 	struct stack_frame *stack = (struct stack_frame*)esp;
 
-	sched_put(cpu_cur_proc());
+	sched_put(cpu_cur_proc(), esp);
 
 	if (stack->intr < IRQ_BASE) {
 		idt_handle_exception(&esp);

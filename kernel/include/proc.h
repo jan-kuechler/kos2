@@ -99,7 +99,7 @@ void sched_update(void);
  * Puts a process at the beginning of an int. handler
  * @param proc The process
  */
-void sched_put(struct proc *proc);
+void sched_put(struct proc *proc, uint32_t stackptr);
 
 /**
  * Gets the next process to start

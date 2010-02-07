@@ -28,16 +28,16 @@ void sched_update(void)
 	if (!cur || cur->ticks-- <= 0 || cur->status == PROC_BLOCKED) {
 		if(cur) cur->ticks = PROC_TICKS;
 		next = list_front(procs);
-		printk(KERN_INFO "sched: next process is '%s'", next->cmdline);
 	}
 	else {
 		next = cur;
 	}
 }
 
-void sched_put(struct proc *proc)
+void sched_put(struct proc *proc, uint32_t esp)
 {
 	if (proc) {
+		proc->kstack.virt = esp;
 		sched_add(proc);
 	}
 }

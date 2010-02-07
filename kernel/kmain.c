@@ -20,12 +20,14 @@ mb_info_t mb_info;
 
 volatile int dummy;
 
+#define DUMMY_WAIT 500000
+
 static void task_A(void)
 {
 	while (true) {
 		cur_console->putc('A');
 		volatile int i=0;
-		for (; i < 10000; ++i)
+		for (; i < DUMMY_WAIT; ++i)
 			;
 	}
 }
@@ -35,7 +37,7 @@ static void task_B(void)
 	while (true) {
 		cur_console->putc('B');
 		volatile int i=0;
-		for (; i < 10000; ++i)
+		for (; i < DUMMY_WAIT; ++i)
 			;
 	}
 }
