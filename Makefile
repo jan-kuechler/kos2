@@ -45,8 +45,8 @@ kernel: build/kos.sys build/dump.txt
 
 iso:
 	@build/scripts/cpyfiles.sh iso
-	@mkisofs -R -b grldr -no-emul-boot -boot-load-size 4 -boot-info-table -o build/kos.iso build/tmp
-
+	@build/scripts/makeiso.sh
+	
 run:
 	@build/scripts/run.sh
 	
@@ -73,16 +73,16 @@ build/.rules: $(SRCFILES) Makefile
 	@$(foreach file,$(SRCFILES),\
 	echo -n $(subst kernel,build/objs,$(dir $(file))) >> build/.rules;\
 	$(CC) $(CFLAGS) -MM $(file) >> build/.rules;\
-	echo -e "\t@$(CC) $(CFLAGS) -o$(patsubst kernel/%.c,build/objs/%.o,$(file)) -c $(file)" >> build/.rules;\
+	echo "	@$(CC) $(CFLAGS) -o$(patsubst kernel/%.c,build/objs/%.o,$(file)) -c $(file)" >> build/.rules;\
 	)
 	@$(foreach file,$(DRVFILES),\
 	echo -n $(subst driver,build/driver,$(dir $(file))) >> build/.rules;\
 	$(CC) $(CFLAGS) -MM $(file) >> build/.rules;\
-	echo -e "\t@$(CC) $(DRIVER_FLAGS) -o$(patsubst driver/%.c,build/driver/%.o,$(file)) -c $(file)" >> build/.rules;\
+	echo "	@$(CC) $(DRIVER_FLAGS) -o$(patsubst driver/%.c,build/driver/%.o,$(file)) -c $(file)" >> build/.rules;\
 	)
 	@$(foreach file,$(ASMFILES),\
 	echo "$(patsubst kernel/%.s,build/objs/%.s.o,$(file)): $(file)" >> build/.rules;\
-	echo -e "\t@$(ASM) $(ASMFLAGS) -o$(patsubst kernel/%.s,build/objs/%.s.o,$(file)) $(file)" >> build/.rules;\
+	echo "	@$(ASM) $(ASMFLAGS) -o$(patsubst kernel/%.s,build/objs/%.s.o,$(file)) $(file)" >> build/.rules;\
 	)
 
 -include build/.rules
